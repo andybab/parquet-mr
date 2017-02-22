@@ -132,6 +132,18 @@ class InternalParquetRecordWriter<T> {
     return lastRowGroupEndPos + columnStore.getBufferedSize();
   }
 
+  /**
+   * Flushes row group in memory to 
+   */
+  public void checkedflushRowGroupToStore() throws IOException {
+    long memSize = columnStore.getBufferedSize();
+    LOG.info("MANUAL FLUSH, mem size {} > {}: flushing {} records to disk.", memSize, nextRowGroupSize, recordCount);
+    flushRowGroupToStore();
+    initStore();
+    recordCountForNextMemCheck = min(max(MINIMUM_RECORD_COUNT_FOR_CHECK, recordCount / 2), MAXIMUM_RECORD_COUNT_FOR_CHECK);
+    this.lastRowGroupEndPos = parquetFileWriter.getPos();
+  }
+
   private void checkBlockSizeReached() throws IOException {
     if (recordCount >= recordCountForNextMemCheck) { // checking the memory size is relatively expensive, so let's not do it for every record.
       long memSize = columnStore.getBufferedSize();

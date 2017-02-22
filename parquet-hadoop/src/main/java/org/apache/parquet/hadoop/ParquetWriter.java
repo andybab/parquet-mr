@@ -296,6 +296,14 @@ public class ParquetWriter<T> implements Closeable {
     }
   }
 
+  /**
+   * Flush buffer content to storage
+   * @throws IOException
+   */
+  public void flush() throws IOException {
+    writer.checkedflushRowGroupToStore();
+  }
+
   @Override
   public void close() throws IOException {
     try {
